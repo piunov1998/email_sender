@@ -31,6 +31,7 @@ sheet = data.ActiveSheet
 i = 0
 e = 0
 go = True
+send_break = False
 
 while go:
     i += 1
@@ -66,16 +67,31 @@ with open('settings.json', 'r', encoding = 'utf-8') as file:
     one_email_count = settings['one_email_count']
 
 start = last_email
-stop = start + one_email_count
+stop = start + one_email_count - 1
 
-for login in logins:
-    sender_email = login
-    password = logins[login]
+email_num = 0
 
-    for i in range(start, stop):
+def send(begin, end):
+    for login in logins:
+        sender_email = login
+        password = logins[login]
+        receivers = []
+
+        for i in range(begin, end):
+            receivers.append(emails[i])
+        
+        start = stop + 1
+        stop = start + one_email_count - 1
+
         context = ssl.create_default_context()
         with smtplib.SMTP_SSL(smtp_server, port, context = context) as server:
             server.login(sender_email, password)
-            server.sendmail(sender_email, emails[i], message.as_string())
+            server.sendmail(sender_email, receivers, message.as_string())
+
+while not send_break:
+    send(start, stop)
+    email_num += 1
+    if email_num >= len(emails):
+        send_break = True
 
 input('Дело сделано! Нажмите Enter для выхода...')

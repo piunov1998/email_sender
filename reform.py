@@ -27,15 +27,15 @@ data.Close()
 
 emails.sort()
 
-book = Excel.Workbooks.Add()
-data = data = Excel.Workbooks.Open(u'C:\\Users//Тоха//github//email_sender//userdata//data_new.xlsx')
+data = Excel.Workbooks.Add()
+#data = data = Excel.Workbooks.Open(u'C:\\Users//Тоха//github//email_sender//userdata//data_new.xlsx')
 sheet = data.ActiveSheet
 
 i = 0
 for email in emails:
     i += 1
     sheet.Cells(i, 1).value = email
-data.Save()
+data.SaveAs(u'C:\\Users//Тоха//github//email_sender//userdata//data_new.xlsx')
 data.Close()
 Excel.Quit()
 
