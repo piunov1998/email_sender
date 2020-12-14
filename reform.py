@@ -6,7 +6,7 @@ else:
     sys.exit()
 
 Excel = win32com.client.Dispatch("Excel.Application")
-data = Excel.Workbooks.Open(u'C:\\Users//Тоха//github//email_sender//userdata//data.xlsx')
+data = Excel.Workbooks.Open(u'C:\\Users\\Тоха\\github\\email_sender\\userdata\\data.xlsx')
 sheet = data.ActiveSheet
 
 emails = []
@@ -35,7 +35,7 @@ i = 0
 for email in emails:
     i += 1
     sheet.Cells(i, 1).value = email
-data.SaveAs(u'C:\\Users//Тоха//github//email_sender//userdata//data_new.xlsx')
+data.SaveAs(u'C:\\Users\\Тоха\\github\\email_sender\\userdata\\data_new.xlsx')
 data.Close()
 Excel.Quit()
 

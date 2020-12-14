@@ -1,10 +1,18 @@
-import smtplib, json, ssl, os, sys, win32com.client
+import smtplib, json, ssl, os, sys, win32com.client, time
 from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from email.header import Header
+from email import encoders
+from email.mime.base import MIMEBase
 
 #SMTP server info
 smtp_server = 'smtp.gmail.com'
 port = 465
+
+#Message
+subject = ''
+body = ''
+message = MIMEMultipart()
 
 if not os.path.exists('./userdata'):
     os.mkdir('./userdata')
@@ -55,30 +63,52 @@ with open('./userdata/message.txt', 'r', encoding = 'utf-8') as file:
     body = ''
     for line in text:
         body += f'{line}\n'
-    message = MIMEText(body[:-1], 'plain', 'utf-8')
+    message.attach(MIMEText(body[:-1], 'plain', 'utf-8'))
     message['Subject'] = Header(head, 'utf-8')
+
+for filename in os.listdir('./userdata/attachmets'):
+    with open(f'./userdata/attachmets/{filename}', 'rb') as file:
+        part = MIMEBase('application', 'octet-stream')
+        part.set_payload(file.read())
+
+encoders.encode_base64(part)
+part.add_header(
+    "Content-Disposition",
+    f"attachment; filename= {filename}",
+)
+message.attach(part)
 
 last_email = ''
 one_email_count = ''
+delay = 0
 
 with open('settings.json', 'r', encoding = 'utf-8') as file:
     settings = json.load(file)
     last_email = settings['last_email']
     one_email_count = settings['one_email_count']
+    delay = settings['delay']
 
 start = last_email
 stop = start + one_email_count - 1
-
 email_num = 0
 
-def send(begin, end):
+def progress():
+    string = f'Отправлено {email_num} сообщений, ошибок - 0'
+    sys.stdout.write(string)
+    sys.stdout.flush()
+    sys.stdout.write('\b' * (len(string)))
+
+while not send_break:
     for login in logins:
         sender_email = login
         password = logins[login]
         receivers = []
 
-        for i in range(begin, end):
-            receivers.append(emails[i])
+        for i in range(start, stop):
+            try:
+                receivers.append(emails[i])
+            except:
+                break
         
         start = stop + 1
         stop = start + one_email_count - 1
@@ -87,9 +117,8 @@ def send(begin, end):
         with smtplib.SMTP_SSL(smtp_server, port, context = context) as server:
             server.login(sender_email, password)
             server.sendmail(sender_email, receivers, message.as_string())
-
-while not send_break:
-    send(start, stop)
+        progress()
+        time.sleep(delay)
     email_num += 1
     if email_num >= len(emails):
         send_break = True
