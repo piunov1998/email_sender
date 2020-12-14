@@ -21,13 +21,28 @@ if not os.path.exists('./userdata'):
     sys.exit()
 
 logins = []
+emails = []
 receiver_email = ['piunov.doc@yandex.ru']
 
 Excel = win32com.client.Dispatch("Excel.Application")
-data = Excel.Workbooks.Open('./userdata/data.xlsx')
+data = Excel.Workbooks.Open(u'C:\\Users//Тоха//github//email_sender//userdata//data.xlsx')
 sheet = data.ActiveSheet
-emails = [r[0].value for r in sheet.Range("A2:A20")]
-print(emails)
+
+i = 0
+e = 0
+go = True
+
+while go:
+    i += 1
+    cell = sheet.Cells(i, 1).value
+    if sheet.Cells(i, 1).value == None:
+        e += 1
+    if '@' in str(cell):
+        emails.append(cell)
+    if e >= 20:
+        go = False
+data.Close()
+Excel.Quit()
 
 with open('./userdata/logins.json', 'r', encoding = 'utf-8') as file:
     logins = json.load(file)

@@ -1,4 +1,9 @@
-import win32com.client
+import win32com.client, sys
+
+if input('Указанный файл будет перезаписан, продолжить? (да/нет):\n') == 'да':
+    print('Работаем...')
+else:
+    sys.exit()
 
 Excel = win32com.client.Dispatch("Excel.Application")
 data = Excel.Workbooks.Open(u'C:\\Users//Тоха//github//email_sender//userdata//data.xlsx')
@@ -6,16 +11,21 @@ sheet = data.ActiveSheet
 
 emails = []
 i = 0
+e = 0
 go = True
 
 while go:
     i += 1
     cell = sheet.Cells(i, 1).value
     if sheet.Cells(i, 1).value == None:
-        go = False
-    if '@' in str(cell):
+        e += 1
+    if '@' in str(cell) and not str(cell) in emails:
         emails.append(cell)
+    if e >= 19:
+        go = False
 data.Close()
+
+emails.sort()
 
 data = data = Excel.Workbooks.Open(u'C:\\Users//Тоха//github//email_sender//userdata//data_new.xlsx')
 sheet = data.ActiveSheet
@@ -27,3 +37,5 @@ for email in emails:
 data.Save()
 data.Close()
 Excel.Quit()
+
+input(f'Записано {len(emails)} уникальных адресов\nНажмите Enter для выхода...')
