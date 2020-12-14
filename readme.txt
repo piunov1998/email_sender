@@ -1,6 +1,6 @@
 Установка:
     1. Скачать и установить Python3 с официального сайта https://www.python.org/downloads/
-    2. Открыть консоль (cmd.exe) и выполнить команду: pip install -U -r requirements.txt
+    2. Открыть консоль (cmd.exe) и выполнить команду: pip install -r requirements.txt
 
 Первоначальная настройка:
     1. Запусить файл start.py

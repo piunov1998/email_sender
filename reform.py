@@ -27,6 +27,7 @@ data.Close()
 
 emails.sort()
 
+book = Excel.Workbooks.Add()
 data = data = Excel.Workbooks.Open(u'C:\\Users//Тоха//github//email_sender//userdata//data_new.xlsx')
 sheet = data.ActiveSheet
 

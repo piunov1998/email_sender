@@ -57,13 +57,25 @@ with open('./userdata/message.txt', 'r', encoding = 'utf-8') as file:
     message = MIMEText(body[:-1], 'plain', 'utf-8')
     message['Subject'] = Header(head, 'utf-8')
 
+last_email = ''
+one_email_count = ''
+
+with open('settings.json', 'r', encoding = 'utf-8') as file:
+    settings = json.load(file)
+    last_email = settings['last_email']
+    one_email_count = settings['one_email_count']
+
+start = last_email
+stop = start + one_email_count
+
 for login in logins:
     sender_email = login
     password = logins[login]
 
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL(smtp_server, port, context = context) as server:
-        server.login(sender_email, password)
-        server.sendmail(sender_email, receiver_email, message.as_string())
+    for i in range(start, stop):
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL(smtp_server, port, context = context) as server:
+            server.login(sender_email, password)
+            server.sendmail(sender_email, emails[i], message.as_string())
 
-input('All work has been done! Press Enter to exit...')
+input('Дело сделано! Нажмите Enter для выхода...')
