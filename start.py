@@ -1,6 +1,10 @@
-import smtplib, json, ssl, os, sys
+import smtplib, json, ssl, os, sys, win32com.client
 from email.mime.text import MIMEText
 from email.header import Header
+
+#SMTP server info
+smtp_server = 'smtp.gmail.com'
+port = 465
 
 if not os.path.exists('./userdata'):
     os.mkdir('./userdata')
@@ -16,11 +20,14 @@ if not os.path.exists('./userdata'):
     input('Заполните файлы в папке userdata своими данными и перезапустите программу.\nНажмите Enter для завершения...')
     sys.exit()
 
-smtp_server = 'smtp.gmail.com'
-port = 465
-
 logins = []
 receiver_email = ['piunov.doc@yandex.ru']
+
+Excel = win32com.client.Dispatch("Excel.Application")
+data = Excel.Workbooks.Open('./userdata/data.xlsx')
+sheet = data.ActiveSheet
+emails = [r[0].value for r in sheet.Range("A2:A20")]
+print(emails)
 
 with open('./userdata/logins.json', 'r', encoding = 'utf-8') as file:
     logins = json.load(file)
