@@ -33,7 +33,7 @@ emails = []
 receiver_email = ['piunov.doc@yandex.ru']
 
 Excel = win32com.client.Dispatch("Excel.Application")
-data = Excel.Workbooks.Open(u'C:\\Users//Тоха//github//email_sender//userdata//data.xlsx')
+data = Excel.Workbooks.Open(u'C:\\Users\\Тоха\\github\\email_sender\\userdata\\data.xlsx')
 sheet = data.ActiveSheet
 
 i = 0
@@ -70,13 +70,12 @@ for filename in os.listdir('./userdata/attachmets'):
     with open(f'./userdata/attachmets/{filename}', 'rb') as file:
         part = MIMEBase('application', 'octet-stream')
         part.set_payload(file.read())
-
-encoders.encode_base64(part)
-part.add_header(
-    "Content-Disposition",
-    f"attachment; filename= {filename}",
-)
-message.attach(part)
+        encoders.encode_base64(part)
+        part.add_header(
+            "Content-Disposition",
+            f"attachment; filename= {filename}",
+        )
+        message.attach(part)
 
 last_email = ''
 one_email_count = ''
@@ -92,7 +91,7 @@ start = last_email
 stop = start + one_email_count - 1
 email_num = 0
 
-def progress():
+def progress(num):
     string = f'Отправлено {email_num} сообщений, ошибок - 0'
     sys.stdout.write(string)
     sys.stdout.flush()
@@ -103,24 +102,32 @@ while not send_break:
         sender_email = login
         password = logins[login]
         receivers = []
-
-        for i in range(start, stop):
+        for i in range(start, stop + 1):
             try:
                 receivers.append(emails[i])
             except:
                 break
-        
+
         start = stop + 1
         stop = start + one_email_count - 1
 
         context = ssl.create_default_context()
         with smtplib.SMTP_SSL(smtp_server, port, context = context) as server:
             server.login(sender_email, password)
-            server.sendmail(sender_email, receivers, message.as_string())
-        progress()
+            try:
+                server.sendmail(sender_email, receivers, message.as_string())
+            except:
+                with open('settings.json', 'r+', encoding = 'utf-8') as file:
+                    sett = json.load(file)
+                    sett['last_email'] = email_num
+                    json.dump(sett, file, sort_keys = True, indent = 2)
+                input('Произошла ошибка при отправке.\nНажмите Enter для выхода...')
+                sys.exit(1)
+        email_num += len(receivers)
+        progress(email_num)
+        if email_num >= len(emails):
+            send_break = True
+            break
         time.sleep(delay)
-    email_num += 1
-    if email_num >= len(emails):
-        send_break = True
 
 input('Дело сделано! Нажмите Enter для выхода...')
