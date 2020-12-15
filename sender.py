@@ -156,12 +156,12 @@ while not send_break:
             time.sleep(delay)
         except KeyboardInterrupt:
             data_save()
-            print('Программа остановлена. Текущеее состояние записанно.')
+            print('\nПрограмма остановлена. Текущеее состояние записанно.')
             input('Нажмите Enter для выхода...')
             sys.exit(1)
         except Exception as error:
             data_save()
-            input(f'Произошла ошибка {error}. Данные были сохранены.\nНажмите Enter для выхода...')
+            input(f'\nПроизошла ошибка {error}. Данные были сохранены.\nНажмите Enter для выхода...')
             sys.exit(1)
 
 last_email = 0
