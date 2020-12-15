@@ -133,3 +133,6 @@ dmypy.json
 
 # User data
 /userdata
+
+#Testing tools
+test.py

@@ -1,4 +1,4 @@
-import smtplib, json, ssl, os, sys, win32com.client, time
+import smtplib, json, ssl, os, sys, win32com.client, time, datetime
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.header import Header
@@ -34,6 +34,7 @@ receiver_email = ['piunov.doc@yandex.ru']
 
 Excel = win32com.client.Dispatch("Excel.Application")
 data = Excel.Workbooks.Open(u'C:\\Users\\Тоха\\github\\email_sender\\userdata\\data.xlsx')
+data.SaveAs(u'C:\\Users\\Тоха\\github\\email_sender\\userdata\\data.xlsx.backup')
 sheet = data.ActiveSheet
 
 i = 0
@@ -50,8 +51,6 @@ while go:
         emails.append(cell)
     if e >= 20:
         go = False
-data.Close()
-Excel.Quit()
 
 with open('./userdata/logins.json', 'r', encoding = 'utf-8') as file:
     logins = json.load(file)
@@ -87,8 +86,6 @@ with open('settings.json', 'r', encoding = 'utf-8') as file:
     one_email_count = settings['one_email_count']
     delay = settings['delay']
 
-start = last_email
-stop = start + one_email_count - 1
 email_num = 0
 
 def progress(num):
@@ -97,19 +94,27 @@ def progress(num):
     sys.stdout.flush()
     sys.stdout.write('\b' * (len(string)))
 
+def conspect(email):
+    date = datetime.datetime.now().strftime("%d.%m.%Y %H:%M")
+
+    for i in range(one_email_count):
+        sheet.Cells(last_email + i, 2).value = date
+        sheet.Cells(last_email + i, 3).value = email
+    
+    data.Save()
+    
 while not send_break:
     for login in logins:
         sender_email = login
         password = logins[login]
         receivers = []
-        for i in range(start, stop + 1):
+        for i in range(last_email, last_email + one_email_count):
             try:
                 receivers.append(emails[i])
             except:
                 break
 
-        start = stop + 1
-        stop = start + one_email_count - 1
+        last_email += one_email_count
 
         context = ssl.create_default_context()
         with smtplib.SMTP_SSL(smtp_server, port, context = context) as server:
@@ -121,8 +126,12 @@ while not send_break:
                     sett = json.load(file)
                     sett['last_email'] = email_num
                     json.dump(sett, file, sort_keys = True, indent = 2)
+                    data.Save()
+                    data.Close()
+                    Excel.Quit()
                 input('Произошла ошибка при отправке.\nНажмите Enter для выхода...')
-                sys.exit(1)
+                sys.exit(1)        
+        conspect(sender_email)
         email_num += len(receivers)
         progress(email_num)
         if email_num >= len(emails):
