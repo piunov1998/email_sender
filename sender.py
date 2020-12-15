@@ -107,10 +107,17 @@ def progress(num):
 
 def conspect(email, pack):
     date = datetime.datetime.now().strftime("%d.%m.%Y %H:%M")
-    
     for add in range(pack):
-        sheet.Cells(last_email + 1 + add, 2).value = date
-        sheet.Cells(last_email + 1 + add, 3).value = email
+        empty = False
+        row = last_email + 1 + add
+        column = 2
+        while not empty:
+            if sheet.Cells(row, column).value == None:
+                sheet.Cells(row, column).value = date
+                sheet.Cells(row, column + 1).value = email
+                empty = True
+            else:
+                column += 2
     data.Save()
     
 print('Начинаем отправку..')
