@@ -119,6 +119,15 @@ def conspect(email, pack):
             else:
                 column += 2
     data.Save()
+
+def data_save():
+    with open('settings.json', 'r+', encoding = 'utf-8') as file:
+            sett = json.load(file)
+            sett['last_email'] = last_email
+            json.dump(sett, file, sort_keys = True, indent = 2)
+            data.Save()
+            data.Close()
+            Excel.Quit()
     
 print('Начинаем отправку..')
 
@@ -132,28 +141,26 @@ while not send_break:
                 receivers.append(emails[i])
             except:
                 break
-
-        context = ssl.create_default_context()
-        with smtplib.SMTP_SSL(smtp_server, port, context = context) as server:
-            server.login(sender_email, password)
-            try:
-                server.sendmail(sender_email, receivers, message.as_string())
-            except:
-                with open('settings.json', 'r+', encoding = 'utf-8') as file:
-                    sett = json.load(file)
-                    sett['last_email'] = last_email
-                    json.dump(sett, file, sort_keys = True, indent = 2)
-                    data.Save()
-                    data.Close()
-                    Excel.Quit()
-                input('Произошла ошибка при отправке.\nНажмите Enter для выхода...')
-                sys.exit(1)        
-        conspect(sender_email, len(receivers))
-        last_email += len(receivers)
-        progress(last_email)
-        if last_email >= len(emails):
-            send_break = True
-            break
-        time.sleep(delay)
+        try:
+            context = ssl.create_default_context()
+            with smtplib.SMTP_SSL(smtp_server, port, context = context) as server:
+                server.login(sender_email, password)
+                server.sendmail(sender_email, receivers, message.as_string())        
+            conspect(sender_email, len(receivers))
+            last_email += len(receivers)
+            progress(last_email)
+            if last_email >= len(emails):
+                send_break = True
+                break
+            time.sleep(delay)
+        except KeyboardInterrupt:
+            data_save()
+            print('Программа остановлена. Текущеее состояние записанно.')
+            input('Нажмите Enter для выхода...')
+            sys.exit(1)
+        except Exception as error:
+            data_save()
+            input(f'Произошла ошибка {error}. Данные были сохранены.\nНажмите Enter для выхода...')
+            sys.exit(1)
 
 input('\nДело сделано! Нажмите Enter для выхода...')
