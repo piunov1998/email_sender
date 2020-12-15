@@ -14,10 +14,7 @@ subject = ''
 body = ''
 message = MIMEMultipart()
 
-#last_email = ''
-#one_email_count = ''
-#delay = 0
-email_num = 0
+#Emails info
 logins = []
 emails = []
 
@@ -47,7 +44,6 @@ if not os.path.exists('./userdata'):
     input('Заполните файлы в папке userdata своими данными и перезапустите программу.\nНажмите Enter для завершения...')
     sys.exit()
 
-print('Читаем файл настроек..')
 with open('settings.json', 'r', encoding = 'utf-8') as file:
     settings = json.load(file)
     last_email = settings['last_email']
@@ -55,10 +51,11 @@ with open('settings.json', 'r', encoding = 'utf-8') as file:
     delay = settings['delay']
     data_path = settings['data_path']
 
-print('Загружаем базу данных')
+print('Загружаем базу данных..')
 Excel = win32com.client.Dispatch("Excel.Application")
 data = Excel.Workbooks.Open(data_path)
 shutil.copy(data_path, './userdata/data.backup')
+print(f'Резервная копия была сохранена по пути: {os.path.abspath("./userdata/data.backup")}.')
 sheet = data.ActiveSheet
 
 i = 0
@@ -75,6 +72,8 @@ while go:
         emails.append(cell)
     if e >= 20:
         go = False
+
+print(f'Загружено {len(emails)} email-адресов.')
 
 with open('./userdata/logins.json', 'r', encoding = 'utf-8') as file:
     logins = json.load(file)
@@ -101,18 +100,21 @@ for filename in os.listdir('./userdata/attachmets'):
         message.attach(part)
 
 def progress(num):
-    string = f'Отправлено {email_num} сообщений'
+    string = f'Отправлено {last_email} сообщений'
     sys.stdout.write(string)
     sys.stdout.flush()
     sys.stdout.write('\b' * (len(string)))
 
-def conspect(email):
+def conspect(email, pack):
     date = datetime.datetime.now().strftime("%d.%m.%Y %H:%M")
-    for i in range(one_email_count):
-        sheet.Cells(last_email + i, 2).value = date
-        sheet.Cells(last_email + i, 3).value = email
+    
+    for add in range(pack):
+        sheet.Cells(last_email + 1 + add, 2).value = date
+        sheet.Cells(last_email + 1 + add, 3).value = email
     data.Save()
     
+print('Начинаем отправку..')
+
 while not send_break:
     for login in logins:
         sender_email = login
@@ -124,8 +126,6 @@ while not send_break:
             except:
                 break
 
-        last_email += one_email_count
-
         context = ssl.create_default_context()
         with smtplib.SMTP_SSL(smtp_server, port, context = context) as server:
             server.login(sender_email, password)
@@ -134,17 +134,17 @@ while not send_break:
             except:
                 with open('settings.json', 'r+', encoding = 'utf-8') as file:
                     sett = json.load(file)
-                    sett['last_email'] = email_num
+                    sett['last_email'] = last_email
                     json.dump(sett, file, sort_keys = True, indent = 2)
                     data.Save()
                     data.Close()
                     Excel.Quit()
                 input('Произошла ошибка при отправке.\nНажмите Enter для выхода...')
                 sys.exit(1)        
-        conspect(sender_email)
-        email_num += len(receivers)
-        progress(email_num)
-        if email_num >= len(emails):
+        conspect(sender_email, len(receivers))
+        last_email += len(receivers)
+        progress(last_email)
+        if last_email >= len(emails):
             send_break = True
             break
         time.sleep(delay)
