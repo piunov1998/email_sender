@@ -47,7 +47,7 @@ if not os.path.exists('./userdata'):
     input('Заполните файлы в папке userdata своими данными и перезапустите программу.\nНажмите Enter для завершения...')
     sys.exit()
 
-
+print('Читаем файл настроек..')
 with open('settings.json', 'r', encoding = 'utf-8') as file:
     settings = json.load(file)
     last_email = settings['last_email']
@@ -55,9 +55,10 @@ with open('settings.json', 'r', encoding = 'utf-8') as file:
     delay = settings['delay']
     data_path = settings['data_path']
 
+print('Загружаем базу данных')
 Excel = win32com.client.Dispatch("Excel.Application")
 data = Excel.Workbooks.Open(data_path)
-shutil.copy(data_path, data_path + '.backup')
+shutil.copy(data_path, './userdata/data.backup')
 sheet = data.ActiveSheet
 
 i = 0
@@ -100,7 +101,7 @@ for filename in os.listdir('./userdata/attachmets'):
         message.attach(part)
 
 def progress(num):
-    string = f'Отправлено {email_num} сообщений, ошибок - 0'
+    string = f'Отправлено {email_num} сообщений'
     sys.stdout.write(string)
     sys.stdout.flush()
     sys.stdout.write('\b' * (len(string)))
@@ -148,4 +149,4 @@ while not send_break:
             break
         time.sleep(delay)
 
-input('Дело сделано! Нажмите Enter для выхода...')
+input('\nДело сделано! Нажмите Enter для выхода...')
