@@ -1,4 +1,4 @@
-import smtplib, json, ssl, os, sys, win32com.client, time, datetime
+import smtplib, json, ssl, os, sys, win32com.client, time, datetime, shutil
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.header import Header
@@ -14,8 +14,15 @@ subject = ''
 body = ''
 message = MIMEMultipart()
 
+#last_email = ''
+#one_email_count = ''
+#delay = 0
+email_num = 0
+logins = []
+emails = []
+
 if not os.path.exists('./userdata'):
-    os.mkdir('./userdata')
+    os.makedirs('./userdata/attachmets')
     with open('./userdata/logins.json', 'x', encoding = 'utf-8') as file:
         json.dump(
             {
@@ -25,16 +32,32 @@ if not os.path.exists('./userdata'):
             }, file, sort_keys = True, indent = 2)
     with open('./userdata/message.txt', 'x', encoding = 'utf-8') as file:
         file.write('Заголовок\nТело сообщения')
+    with open('./settings.json', 'w', encoding = 'utf-8') as file:
+        user_path = input('Укажите путь к базе email-адресов(Enter для стандартного):\n')
+        if user_path == '':
+            data_path = './userdata/data.xlsx'
+        else:
+            data_path = user_path[-(len(user_path) - 1):-1]
+        json.dump({
+            'delay' : int(input('Введите задержу между отправками в секундах:\n')),
+            'one_email_count' : int(input('Введите количество адресатов в одном письме:\n')),
+            'last_email' : 0,
+            'data_path' : data_path
+        }, file, sort_keys = True, indent = 2)
     input('Заполните файлы в папке userdata своими данными и перезапустите программу.\nНажмите Enter для завершения...')
     sys.exit()
 
-logins = []
-emails = []
-receiver_email = ['piunov.doc@yandex.ru']
+
+with open('settings.json', 'r', encoding = 'utf-8') as file:
+    settings = json.load(file)
+    last_email = settings['last_email']
+    one_email_count = settings['one_email_count']
+    delay = settings['delay']
+    data_path = settings['data_path']
 
 Excel = win32com.client.Dispatch("Excel.Application")
-data = Excel.Workbooks.Open(u'C:\\Users\\Тоха\\github\\email_sender\\userdata\\data.xlsx')
-data.SaveAs(u'C:\\Users\\Тоха\\github\\email_sender\\userdata\\data.xlsx.backup')
+data = Excel.Workbooks.Open(data_path)
+shutil.copy(data_path, data_path + '.backup')
 sheet = data.ActiveSheet
 
 i = 0
@@ -76,18 +99,6 @@ for filename in os.listdir('./userdata/attachmets'):
         )
         message.attach(part)
 
-last_email = ''
-one_email_count = ''
-delay = 0
-
-with open('settings.json', 'r', encoding = 'utf-8') as file:
-    settings = json.load(file)
-    last_email = settings['last_email']
-    one_email_count = settings['one_email_count']
-    delay = settings['delay']
-
-email_num = 0
-
 def progress(num):
     string = f'Отправлено {email_num} сообщений, ошибок - 0'
     sys.stdout.write(string)
@@ -96,11 +107,9 @@ def progress(num):
 
 def conspect(email):
     date = datetime.datetime.now().strftime("%d.%m.%Y %H:%M")
-
     for i in range(one_email_count):
         sheet.Cells(last_email + i, 2).value = date
         sheet.Cells(last_email + i, 3).value = email
-    
     data.Save()
     
 while not send_break:
