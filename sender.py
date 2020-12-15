@@ -121,13 +121,14 @@ def conspect(email, pack):
     data.Save()
 
 def data_save():
-    with open('settings.json', 'r+', encoding = 'utf-8') as file:
-            sett = json.load(file)
-            sett['last_email'] = last_email
-            json.dump(sett, file, sort_keys = True, indent = 2)
-            data.Save()
-            data.Close()
-            Excel.Quit()
+    with open('settings.json', 'r', encoding = 'utf-8') as file:
+        sett = json.load(file)
+    sett['last_email'] = last_email
+    with open('settings.json', 'w', encoding = 'utf-8') as file:        
+        json.dump(sett, file, sort_keys = True, indent = 2)
+    data.Save()
+    data.Close()
+    Excel.Quit()
     
 print('Начинаем отправку..')
 
@@ -163,4 +164,6 @@ while not send_break:
             input(f'Произошла ошибка {error}. Данные были сохранены.\nНажмите Enter для выхода...')
             sys.exit(1)
 
+last_email = 0
+data_save()
 input('\nДело сделано! Нажмите Enter для выхода...')
