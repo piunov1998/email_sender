@@ -18,17 +18,7 @@ message = MIMEMultipart()
 logins = []
 emails = []
 
-if not os.path.exists('./userdata'):
-    os.makedirs('./userdata/attachmets')
-    with open('./userdata/logins.json', 'x', encoding = 'utf-8') as file:
-        json.dump(
-            {
-                'your_email_1@pipka.ru' : 'password',
-                'your_email_3@pipka.ru' : 'password',
-                'your_email_2@pipka.ru' : 'password'
-            }, file, sort_keys = True, indent = 2)
-    with open('./userdata/message.txt', 'x', encoding = 'utf-8') as file:
-        file.write('Заголовок\nТело сообщения')
+if not os.path.exists('./settings.json'):
     with open('./settings.json', 'w', encoding = 'utf-8') as file:
         user_path = input('Укажите путь к базе email-адресов(Enter для стандартного):\n')
         if user_path == '':
@@ -41,6 +31,18 @@ if not os.path.exists('./userdata'):
             'last_email' : 0,
             'data_path' : data_path
         }, file, sort_keys = True, indent = 2)
+
+if not os.path.exists('./userdata'):
+    os.makedirs('./userdata/attachmets')
+    with open('./userdata/logins.json', 'x', encoding = 'utf-8') as file:
+        json.dump(
+            {
+                'your_email_1@pipka.ru' : 'password',
+                'your_email_3@pipka.ru' : 'password',
+                'your_email_2@pipka.ru' : 'password'
+            }, file, sort_keys = True, indent = 2)
+    with open('./userdata/message.txt', 'x', encoding = 'utf-8') as file:
+        file.write('Заголовок\nТело сообщения')
     input('Заполните файлы в папке userdata своими данными и перезапустите программу.\nНажмите Enter для завершения...')
     sys.exit()
 
@@ -129,9 +131,9 @@ def data_save():
     data.Save()
     data.Close()
     Excel.Quit()
-    
-print('Начинаем отправку..')
 
+#Sending cycle   
+print('Начинаем отправку..')
 while not send_break:
     for login in logins:
         sender_email = login
@@ -156,12 +158,11 @@ while not send_break:
             time.sleep(delay)
         except KeyboardInterrupt:
             data_save()
-            print('\nПрограмма остановлена. Текущеее состояние записанно.')
-            input('Нажмите Enter для выхода...')
+            input('\nПрограмма остановлена. Текущеее состояние записанно.\nНажмите Enter для выхода...')
             sys.exit(1)
         except Exception as error:
             data_save()
-            input(f'\nПроизошла ошибка {error}. Данные были сохранены.\nНажмите Enter для выхода...')
+            input(f'\nПроизошла ошибка:\n{error}\nДанные были сохранены.\nНажмите Enter для выхода...')
             sys.exit(1)
 
 last_email = 0
