@@ -9,11 +9,6 @@ from email.mime.base import MIMEBase
 smtp_server = 'smtp.gmail.com'
 port = 465
 
-#Message
-subject = ''
-body = ''
-message = MIMEMultipart()
-
 #Emails info
 logins = []
 emails = []
@@ -81,6 +76,7 @@ with open('./userdata/logins.json', 'r', encoding = 'utf-8') as file:
     logins = json.load(file)
 
 with open('./userdata/message.txt', 'r', encoding = 'utf-8') as file:
+    message = MIMEMultipart()
     text = file.read().splitlines()
     head = text[0]
     text.pop(0)
