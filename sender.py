@@ -9,11 +9,13 @@ from email.mime.base import MIMEBase
 smtp_server = 'smtp.gmail.com'
 port = 465
 
-#Emails info
+#Emails info containers
 logins = []
 emails = []
 
 if not os.path.exists('./settings.json'):
+    if not input('Введите код активации:\n') == 'R47wzGaYiM1DaN1xz':
+        input('Неверный код!\nНажмите Enter для выхода..')
     with open('./settings.json', 'w', encoding = 'utf-8') as file:
         user_path = input('Укажите путь к базе email-адресов(Enter для стандартного):\n')
         if user_path == '':
