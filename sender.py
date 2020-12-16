@@ -16,6 +16,7 @@ emails = []
 if not os.path.exists('./settings.json'):
     if not input('Введите код активации:\n') == 'R47wzGaYiM1DaN1xz':
         input('Неверный код!\nНажмите Enter для выхода..')
+        sys.exit()
     with open('./settings.json', 'w', encoding = 'utf-8') as file:
         user_path = input('Укажите путь к базе email-адресов(Enter для стандартного):\n')
         if user_path == '':
@@ -51,11 +52,15 @@ with open('settings.json', 'r', encoding = 'utf-8') as file:
     data_path = settings['data_path']
 
 print('Загружаем базу данных..')
-Excel = win32com.client.Dispatch("Excel.Application")
-data = Excel.Workbooks.Open(data_path)
-shutil.copy(data_path, './userdata/data.backup')
-print(f'Резервная копия была сохранена по пути: {os.path.abspath("./userdata/data.backup")}.')
-sheet = data.ActiveSheet
+try:
+    Excel = win32com.client.Dispatch("Excel.Application")
+    data = Excel.Workbooks.Open(data_path)
+    shutil.copy(data_path, './userdata/data.backup')
+    print(f'Резервная копия была сохранена по пути: {os.path.abspath("./userdata/data.backup")}.')
+    sheet = data.ActiveSheet
+except Exception as error:
+    input(f'Возникла ошибка при загрузке базы данных, проверьте не был ли перемещен или удален файл\n Код ошибки: {error}\nНажмите Enter для выхода..')
+    sys.exit(1)
 
 i = 0
 e = 0
