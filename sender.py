@@ -19,7 +19,7 @@ if not os.path.exists('./settings.json'):
     with open('./settings.json', 'w', encoding = 'utf-8') as file:
         user_path = input('Укажите путь к базе email-адресов(Enter для стандартного):\n')
         if user_path == '':
-            data_path = './userdata/data.xlsx'
+            data_path = os.path.abspath('./userdata/data.xlsx')
         else:
             data_path = user_path[-(len(user_path) - 1):-1]
         json.dump({
