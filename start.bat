@@ -1,5 +1,5 @@
 @echo off
-title Email sender
+title E-mail sender
 if exist requirements.txt goto install
 :start
 cls
